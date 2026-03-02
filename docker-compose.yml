@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: sas_snippet_db
+    environment:
+      POSTGRES_DB: sassnippets
+      POSTGRES_USER: snippet_user
+      POSTGRES_PASSWORD: snippet_pass
+      PGTZ: UTC
+      TZ: UTC
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

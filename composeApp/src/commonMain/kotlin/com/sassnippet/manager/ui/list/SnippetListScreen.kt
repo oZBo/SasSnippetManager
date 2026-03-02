@@ -1,0 +1,136 @@
+package com.sassnippet.manager.ui.list
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sassnippet.manager.model.Snippet
+import com.sassnippet.manager.repository.SnippetRepository
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SnippetListScreen(
+    repository: SnippetRepository,
+    onSnippetClick: (Int) -> Unit,
+    onCreateClick: () -> Unit,
+) {
+    val viewModel = viewModel { SnippetListViewModel(repository) }
+    val uiState by viewModel.uiState.collectAsState()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(title = { Text("SAS Snippets") })
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onCreateClick) {
+                Text("+", style = MaterialTheme.typography.headlineMedium)
+            }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            OutlinedTextField(
+                value = uiState.searchQuery,
+                onValueChange = { viewModel.search(it) },
+                placeholder = { Text("Search by keyword or tag...") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium
+            )
+
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+                uiState.error != null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text("Error: ${uiState.error}")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = { viewModel.loadSnippets() }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                }
+                uiState.snippets.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No snippets found")
+                    }
+                }
+                else -> {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(uiState.snippets) { snippet ->
+                            SnippetListItem(
+                                snippet = snippet,
+                                onClick = { onSnippetClick(snippet.id) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SnippetListItem(snippet: Snippet, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = snippet.title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                AssistChip(
+                    onClick = {},
+                    label = { Text(snippet.type.name) }
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = snippet.description,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2
+            )
+            if (snippet.tags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    snippet.tags.forEach { tag ->
+                        SuggestionChip(onClick = {}, label = { Text(tag) })
+                    }
+                }
+            }
+        }
+    }
+}
