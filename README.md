@@ -1,82 +1,103 @@
-This is a Kotlin Multiplatform project targeting Android, iOS, Web, Server.
+# SAS Snippet Manager
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+A cross-platform application for managing SAS code snippets, macros, and reusable code blocks. Built with Kotlin Multiplatform and Compose Multiplatform, targeting Android, iOS, and Web from a single codebase.
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+## Overview
 
-* [/server](./server/src/main/kotlin) is for the Ktor server application.
+SAS developers often struggle with scattered code snippets across local files, wikis, and emails. SAS Snippet Manager provides a centralized repository where teams can store, search, and reuse SAS code — from PROC SQL joins to complex macros.
 
-* [/shared](./shared/src) is for the code that will be shared between all targets in the project.
-  The most important subfolder is [commonMain](./shared/src/commonMain/kotlin). If preferred, you
-  can add code to the platform-specific folders here too.
+## Features
 
-### Build and Run Android Application
+- **Browse snippets** — scrollable list with title, type badge, description, and tags
+- **Search** — find snippets by keyword, description, or tag
+- **Detail view** — full snippet details with monospace code display and one-click copy
+- **Create snippets** — add new snippets with title, type, description, code, and comma-separated tags
+- **Snippet types** — MACRO, DATA\_STEP, PROC\_SQL, REPORT, OTHER
+- **Reactive updates** — list refreshes automatically after creating a new snippet
 
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
+## Tech Stack
 
-### Build and Run Server
+### Client (Kotlin Multiplatform)
+- **Kotlin Multiplatform** — shared business logic across Android, iOS, Web
+- **Compose Multiplatform** — shared UI across all platforms
+- **Ktor Client** — HTTP communication with the backend
+- **Kotlin Coroutines + StateFlow + SharedFlow** — async operations and reactive state
 
-To build and run the development version of the server, use the run configuration from the run widget
-in your IDE’s toolbar or run it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :server:run
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :server:run
-  ```
+### Server
+- **Ktor** — lightweight Kotlin backend framework
+- **Exposed ORM** — type-safe SQL with Kotlin DSL
+- **PostgreSQL** — relational database
+- **HikariCP** — high-performance connection pooling
+- **Docker Compose** — local database setup
 
-### Build and Run Web Application
+## Project Structure
 
-To build and run the development version of the web app, use the run configuration from the run widget
-in your IDE's toolbar or run it directly from the terminal:
-- for the Wasm target (faster, modern browsers):
-  - on macOS/Linux
-    ```shell
-    ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
-    ```
-  - on Windows
-    ```shell
-    .\gradlew.bat :composeApp:wasmJsBrowserDevelopmentRun
-    ```
-- for the JS target (slower, supports older browsers):
-  - on macOS/Linux
-    ```shell
-    ./gradlew :composeApp:jsBrowserDevelopmentRun
-    ```
-  - on Windows
-    ```shell
-    .\gradlew.bat :composeApp:jsBrowserDevelopmentRun
-    ```
+```
+SasSnippetManager/
+├── composeApp/          # Shared Compose Multiplatform UI
+│   └── src/
+│       └── commonMain/
+│           └── ui/
+│               ├── list/       # Snippet list screen + ViewModel
+│               ├── detail/     # Snippet detail screen + ViewModel
+│               └── create/     # Create snippet screen + ViewModel
+├── shared/              # Shared KMP business logic
+│   └── src/
+│       └── commonMain/
+│           ├── model/          # Data classes, enums, EventBus
+│           ├── network/        # Ktor API client
+│           └── repository/     # Repository layer
+├── server/              # Ktor backend
+│   └── src/main/kotlin/
+│       ├── database/           # Exposed table definitions + DatabaseFactory
+│       ├── models/             # Serializable data models
+│       ├── repository/         # Database operations
+│       └── routes/             # REST API endpoints
+├── iosApp/              # iOS entry point
+└── docker-compose.yml   # PostgreSQL local setup
+```
 
-### Build and Run iOS Application
+## API Endpoints
 
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/snippets` | Get all snippets |
+| GET | `/api/snippets/{id}` | Get snippet by ID |
+| GET | `/api/snippets/search?q=` | Search by keyword or tag |
+| POST | `/api/snippets` | Create new snippet |
 
----
+## Getting Started
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
-[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform),
-[Kotlin/Wasm](https://kotl.in/wasm/)…
+### Prerequisites
+- Java 21 (LTS)
+- Docker Desktop
+- Android Studio or IntelliJ IDEA
 
-We would appreciate your feedback on Compose/Web and Kotlin/Wasm in the public Slack channel [#compose-web](https://slack-chats.kotlinlang.org/c/compose-web).
-If you face any issues, please report them on [YouTrack](https://youtrack.jetbrains.com/newIssue?project=CMP).
+### Run the backend
+
+```bash
+# Start PostgreSQL
+docker-compose up -d
+
+# Run Ktor server
+./gradlew :server:run
+```
+
+### Run Android
+Open the project in IntelliJ IDEA and run the `composeApp` configuration on an Android emulator.
+
+### Run Web
+
+```bash
+./gradlew kotlinWasmUpgradeYarnLock
+./gradlew :composeApp:wasmJsBrowserDevelopmentRun
+```
+
+## Roadmap
+
+- [ ] Edit and delete snippets
+- [ ] SAS syntax highlighting
+- [ ] Offline cache with SQLDelight
+- [ ] User authentication
+- [ ] Backend deployment to Railway/Render
+- [ ] AI-powered snippet tagging and explanation
