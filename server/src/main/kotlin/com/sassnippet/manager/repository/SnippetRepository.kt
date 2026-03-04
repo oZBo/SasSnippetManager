@@ -1,16 +1,12 @@
 package com.sassnippet.manager.repository
 
 import com.sassnippet.manager.database.SnippetTable
+import com.sassnippet.manager.models.CreateSnippetRequest
 import com.sassnippet.manager.models.Snippet
 import com.sassnippet.manager.models.SnippetType
 import kotlinx.serialization.json.Json
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.lowerCase
-import org.jetbrains.exposed.sql.or
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class SnippetRepository {
@@ -54,6 +50,21 @@ class SnippetRepository {
             it[SnippetTable.tags] = Json.encodeToString(tags)
         }
         getById(insertedId.value)!!
+    }
+
+    fun update(id: Int, request: CreateSnippetRequest): Snippet? = transaction {
+        val updated = SnippetTable.update({ SnippetTable.id eq id }) {
+            it[title] = request.title
+            it[type] = request.type.name
+            it[description] = request.description
+            it[code] = request.code
+            it[tags] = Json.encodeToString(request.tags)
+        }
+        if (updated > 0) getById(id) else null
+    }
+
+    fun delete(id: Int): Boolean = transaction {
+        SnippetTable.deleteWhere { SnippetTable.id eq id } > 0
     }
 
     private fun ResultRow.toSnippet() = Snippet(

@@ -36,4 +36,28 @@ class SnippetRepository(private val apiClient: SnippetApiClient) {
             )
         )
     }
+
+    suspend fun update(
+        id: Int,
+        title: String,
+        type: SnippetType,
+        description: String,
+        code: String,
+        tags: List<String>
+    ): Result<Snippet?> = runCatching {
+        apiClient.update(
+            id, CreateSnippetRequest(
+                title = title,
+                type = type,
+                description = description,
+                code = code,
+                tags = tags
+            )
+        )
+    }
+
+    suspend fun delete(id: Int): Result<Boolean> = runCatching {
+        apiClient.delete(id)
+    }
+
 }

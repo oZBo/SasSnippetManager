@@ -47,6 +47,30 @@ fun Route.snippetRoutes(repository: SnippetRepository) {
             )
             call.respond(HttpStatusCode.Created, snippet)
         }
+
+        put("/{id}") {
+            val id = call.parameters["id"]?.toIntOrNull()
+                ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid ID")
+
+            val request = call.receive<CreateSnippetRequest>()
+            val snippet = repository.update(id, request)
+                ?: return@put call.respond(HttpStatusCode.NotFound, "Snippet not found")
+
+            call.respond(HttpStatusCode.OK, snippet)
+        }
+
+        delete("/{id}") {
+            val id = call.parameters["id"]?.toIntOrNull()
+                ?: return@delete call.respond(HttpStatusCode.BadRequest, "Invalid ID")
+
+            val deleted = repository.delete(id)
+            if (deleted) {
+                call.respond(HttpStatusCode.NoContent)
+            } else {
+               call.respond(HttpStatusCode.NotFound, "Snippet not found")
+            }
+        }
+
     }
 
 }

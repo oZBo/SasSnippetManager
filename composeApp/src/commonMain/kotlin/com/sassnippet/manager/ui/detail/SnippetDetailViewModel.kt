@@ -2,47 +2,35 @@ package com.sassnippet.manager.ui.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sassnippet.manager.arch.Store
 import com.sassnippet.manager.model.Snippet
+import com.sassnippet.manager.model.SnippetType
 import com.sassnippet.manager.repository.SnippetRepository
+import com.sassnippet.manager.ui.model.SnippetEvent
+import com.sassnippet.manager.ui.model.SnippetEventBus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-
-data class SnippetDetailUiState(
-    val snippet: Snippet? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null
-)
 
 class SnippetDetailViewModel(
     private val repository: SnippetRepository,
     private val snippetId: Int
-) : ViewModel(){
+) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SnippetDetailUiState())
-    val uiState: StateFlow<SnippetDetailUiState> = _uiState
+    private val store = Store(
+        initialState = SnippetDetailState(isLoading = true),
+        reducer = SnippetDetailReducer::reduce,
+        middlewares = listOf(SnippetDetailMiddleware(repository, snippetId)),
+        scope = viewModelScope
+    )
+
+    val state: StateFlow<SnippetDetailState> = store.state
 
     init {
-        loadSnippet()
+        store.dispatch(SnippetDetailIntent.Load)
     }
 
-    fun loadSnippet() {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            repository.getById(snippetId)
-                .onSuccess { snippet ->
-                    _uiState.value = _uiState.value.copy(
-                        snippet = snippet,
-                        isLoading = false
-                    )
-                }
-                .onFailure { error ->
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = error.message
-                    )
-                }
-        }
-    }
-
+    fun dispatch(intent: SnippetDetailIntent) = store.dispatch(intent)
 }
