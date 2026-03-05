@@ -12,8 +12,10 @@ SAS developers often struggle with scattered code snippets across local files, w
 - **Search** — find snippets by keyword, description, or tag
 - **Detail view** — full snippet details with monospace code display and one-click copy
 - **Create snippets** — add new snippets with title, type, description, code, and comma-separated tags
+- **Edit snippets** — update any snippet field via a dedicated edit screen
+- **Delete snippets** — remove snippets with a confirmation dialog
 - **Snippet types** — MACRO, DATA\_STEP, PROC\_SQL, REPORT, OTHER
-- **Reactive updates** — list refreshes automatically after creating a new snippet
+- **Reactive updates** — list refreshes automatically after create, edit, or delete via `SnippetEventBus`
 
 ## Tech Stack
 
@@ -40,11 +42,12 @@ SasSnippetManager/
 │           └── ui/
 │               ├── list/       # Snippet list screen + ViewModel
 │               ├── detail/     # Snippet detail screen + ViewModel
-│               └── create/     # Create snippet screen + ViewModel
+│               ├── create/     # Create snippet screen + ViewModel
+│               └── edit/       # Edit snippet screen + ViewModel
 ├── shared/              # Shared KMP business logic
 │   └── src/
 │       └── commonMain/
-│           ├── model/          # Data classes, enums, EventBus
+│           ├── model/          # Data classes, enums, SnippetEventBus
 │           ├── network/        # Ktor API client
 │           └── repository/     # Repository layer
 ├── server/              # Ktor backend
@@ -65,6 +68,32 @@ SasSnippetManager/
 | GET | `/api/snippets/{id}` | Get snippet by ID |
 | GET | `/api/snippets/search?q=` | Search by keyword or tag |
 | POST | `/api/snippets` | Create new snippet |
+| PUT | `/api/snippets/{id}` | Update existing snippet |
+| DELETE | `/api/snippets/{id}` | Delete snippet by ID |
+
+### Request / Response
+
+**Snippet model** (used in POST and PUT request body):
+```json
+{
+  "title": "My Macro",
+  "code": "%macro hello; %put Hello; %mend;",
+  "description": "A simple hello macro",
+  "tags": ["macro", "utility"],
+  "category": "MACRO"
+}
+```
+
+**Category values:** `MACRO`, `DATA_STEP`, `PROC_SQL`, `REPORT`, `OTHER`
+
+## Navigation
+
+| Route | Screen |
+|-------|--------|
+| `/` | Snippet list |
+| `detail/{id}` | Snippet detail (with Edit / Delete actions in TopAppBar) |
+| `create` | Create new snippet |
+| `edit/{id}` | Edit existing snippet |
 
 ## Getting Started
 
@@ -86,6 +115,8 @@ docker-compose up -d
 ### Run Android
 Open the project in IntelliJ IDEA and run the `composeApp` configuration on an Android emulator.
 
+> **Note:** Android requires cleartext traffic to be enabled in the manifest for HTTP connections to a local emulator host.
+
 ### Run Web
 
 ```bash
@@ -93,11 +124,14 @@ Open the project in IntelliJ IDEA and run the `composeApp` configuration on an A
 ./gradlew :composeApp:wasmJsBrowserDevelopmentRun
 ```
 
+## Architecture Notes
+
+- **SnippetEventBus** — `SharedFlow`-based event bus that propagates `SnippetCreated`, `SnippetUpdated`, and `SnippetDeleted` events across screens without tight coupling.
+- **ViewModel + StateFlow + Result pattern** — each screen has its own ViewModel exposing UI state as `StateFlow<Result<T>>`.
+- **Repository layer** — shared module abstracts HTTP calls behind a repository interface, keeping ViewModels platform-agnostic.
+
 ## Roadmap
 
-- [ ] Edit and delete snippets
-- [ ] SAS syntax highlighting
 - [ ] Offline cache with SQLDelight
 - [ ] User authentication
-- [ ] Backend deployment to Railway/Render
 - [ ] AI-powered snippet tagging and explanation
