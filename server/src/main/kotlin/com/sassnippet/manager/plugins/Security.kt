@@ -7,8 +7,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 
 fun Application.configureApiKeySecurity() {
-    val apiKey = environment.config.propertyOrNull("security.apikey")
-        ?.getString() ?: "dev-secret-key"
+    val apiKey = System.getenv("API_KEY") ?: "dev-secret-key"
 
     intercept(ApplicationCallPipeline.Plugins) {
         val path = call.request.path()

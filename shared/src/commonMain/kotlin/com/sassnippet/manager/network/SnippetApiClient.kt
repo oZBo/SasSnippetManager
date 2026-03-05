@@ -32,7 +32,7 @@ class SnippetApiClient(
             })
         }
         defaultRequest{
-            header("X-API-KEY", apiKey)
+            header("X-API-Key", apiKey)
         }
     }
 
