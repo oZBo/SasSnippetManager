@@ -1,6 +1,7 @@
 FROM gradle:8.5-jdk21 AS build
 WORKDIR /app
 COPY . .
+ARG CACHEBUST=1
 RUN chmod +x gradlew && ./gradlew :server:buildFatJar --no-daemon
 
 FROM eclipse-temurin:21-jre
