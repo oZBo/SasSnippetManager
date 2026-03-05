@@ -9,13 +9,19 @@ import org.slf4j.LoggerFactory
 
 fun Application.configureApiKeySecurity() {
     val logger = LoggerFactory.getLogger("SecurityConfig")
-    val apiKey = System.getenv("API_KEY") ?: "dev-secret-key"
-    logger.info("Security configured with key: ${apiKey.take(4)}****")
 
-    val allEnvVars = System.getenv()
-        .filter { it.key.contains("API", ignoreCase = true) }
-        .map { "${it.key}=${it.value.take(4)}****" }
-    logger.info("API-related env vars: $allEnvVars")
+    // спробуємо всі можливі способи
+    val fromEnv = System.getenv("API_KEY")
+    val fromProps = System.getProperty("API_KEY")
+    logger.info("fromEnv: ${fromEnv?.take(4)}****")
+    logger.info("fromProps: ${fromProps?.take(4)}****")
+
+    // логуємо ВСІ змінні середовища
+    System.getenv().forEach { (k, v) ->
+        logger.info("ENV: $k=${v.take(2)}**")
+    }
+
+    val apiKey = fromEnv ?: fromProps ?: "dev-secret-key"
 
     intercept(ApplicationCallPipeline.Plugins) {
         val path = call.request.path()
