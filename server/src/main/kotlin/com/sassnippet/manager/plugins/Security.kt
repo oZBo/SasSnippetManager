@@ -12,6 +12,11 @@ fun Application.configureApiKeySecurity() {
     val apiKey = System.getenv("API_KEY") ?: "dev-secret-key"
     logger.info("Security configured with key: ${apiKey.take(4)}****")
 
+    val allEnvVars = System.getenv()
+        .filter { it.key.contains("API", ignoreCase = true) }
+        .map { "${it.key}=${it.value.take(4)}****" }
+    logger.info("API-related env vars: $allEnvVars")
+
     intercept(ApplicationCallPipeline.Plugins) {
         val path = call.request.path()
         if (path.startsWith("/api/")) {
