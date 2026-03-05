@@ -24,6 +24,8 @@ dependencies {
     implementation(libs.ktor.serverContentNegotiation)
     implementation(libs.ktor.serializationKotlinxJson)
     implementation(libs.ktor.serverCors)
+    implementation(libs.ktor.serverStatusPages)
+    implementation(libs.ktor.serverCallLogging)
 
     // Database
     implementation(libs.exposed.core)
@@ -37,4 +39,6 @@ dependencies {
     // Test
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.h2)
+    testImplementation(libs.mockk)
 }

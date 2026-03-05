@@ -5,8 +5,10 @@ import com.sassnippet.manager.model.Snippet
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
@@ -17,7 +19,10 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-class SnippetApiClient(private val baseUrl: String) {
+class SnippetApiClient(
+    private val baseUrl: String,
+    private val apiKey: String,
+) {
 
     private val client = HttpClient {
         install(ContentNegotiation) {
@@ -25,6 +30,9 @@ class SnippetApiClient(private val baseUrl: String) {
                 ignoreUnknownKeys = true
                 isLenient = true
             })
+        }
+        defaultRequest{
+            header("X-API-KEY", apiKey)
         }
     }
 

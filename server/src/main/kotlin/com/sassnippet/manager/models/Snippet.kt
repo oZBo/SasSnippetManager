@@ -19,6 +19,21 @@ data class CreateSnippetRequest(
     val description: String,
     val code: String,
     val tags: List<String> = emptyList()
+) {
+    fun validate() {
+        require(title.isNotBlank()) { "title cannot be blank" }
+        require(code.isNotBlank()) { "code cannot be blank" }
+        require(title.length <= 255) { "title too long" }
+    }
+}
+
+@Serializable
+data class PagedSnippetResponse<T>(
+    val data: List<T>,
+    val total: Int,
+    val page: Int,
+    val pageSize: Int,
+    val totalPages: Int
 )
 
 @Serializable

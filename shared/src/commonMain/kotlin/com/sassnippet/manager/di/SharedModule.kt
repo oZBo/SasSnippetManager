@@ -6,7 +6,10 @@ import com.sassnippet.manager.repository.SnippetRepository
 import org.koin.dsl.module
 
 val networkModule = module {
-    single { SnippetApiClient(getPlatform().baseUrl) }
+    single { SnippetApiClient(
+        baseUrl = getPlatform().baseUrl,
+        apiKey = getPlatform().apiKey
+    ) }
 }
 
 val repositoryModule = module {

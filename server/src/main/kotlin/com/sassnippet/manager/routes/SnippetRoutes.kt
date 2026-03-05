@@ -35,9 +35,17 @@ fun Route.snippetRoutes(repository: SnippetRepository) {
             call.respond(HttpStatusCode.OK, snippet)
         }
 
+        get {
+            val page = call.request.queryParameters["page"]?.toIntOrNull()?.coerceAtLeast(1)
+            val pageSize = call.request.queryParameters["pageSize"]?.toIntOrNull()?.coerceIn(1, 100) ?: 20
+            val result = repository.getPaged(page ?: 1, pageSize)
+            call.respond(HttpStatusCode.OK, result)
+        }
+
         // POST /api/snippets
         post {
             val request = call.receive<CreateSnippetRequest>()
+            request.validate()
             val snippet = repository.create(
                 title = request.title,
                 type = request.type,
@@ -53,6 +61,7 @@ fun Route.snippetRoutes(repository: SnippetRepository) {
                 ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid ID")
 
             val request = call.receive<CreateSnippetRequest>()
+            request.validate()
             val snippet = repository.update(id, request)
                 ?: return@put call.respond(HttpStatusCode.NotFound, "Snippet not found")
 

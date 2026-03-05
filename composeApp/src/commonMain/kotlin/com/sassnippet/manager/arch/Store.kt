@@ -7,8 +7,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * Generic Redux Store.
- *
  * Flow:
  *   UI dispatches Intent
  *     → Middleware chain handles side effects (API, EventBus, logging)
@@ -32,7 +30,6 @@ class Store<S : Any, I : Any>(
     }
 
     private suspend fun execute(intent: I) {
-        // Build a suspend chain — must be inside suspend fun to be valid
         val chain: suspend (I) -> Unit = middlewares.foldRight(
             { i: I -> applyReducer(i) }
         ) { middleware, next ->
