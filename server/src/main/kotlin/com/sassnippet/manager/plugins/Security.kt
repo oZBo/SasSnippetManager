@@ -16,6 +16,7 @@ fun Application.configureApiKeySecurity() {
         val path = call.request.path()
         if (path.startsWith("/api/")) {
             val key = call.request.headers["X-API-Key"]
+            logger.info("Server key: ${apiKey.take(4)}****")
             logger.info("Received key: ${key?.take(4)}****")
             if (key != apiKey) {
                 call.respond(HttpStatusCode.Unauthorized, ErrorResponse("Invalid or missing API key"))
