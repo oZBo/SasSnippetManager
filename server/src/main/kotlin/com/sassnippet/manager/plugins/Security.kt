@@ -11,8 +11,8 @@ fun Application.configureApiKeySecurity() {
     val logger = LoggerFactory.getLogger("SecurityConfig")
 
     // спробуємо всі можливі способи
-    val fromEnv = System.getenv("API_KEY")
-    val fromProps = System.getProperty("API_KEY")
+    val fromEnv = System.getenv("X_API_KEY")
+    val fromProps = System.getProperty("X_API_KEY")
     logger.info("fromEnv: ${fromEnv?.take(4)}****")
     logger.info("fromProps: ${fromProps?.take(4)}****")
 
