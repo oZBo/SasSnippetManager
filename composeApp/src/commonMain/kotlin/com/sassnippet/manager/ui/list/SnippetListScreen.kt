@@ -32,7 +32,14 @@ fun SnippetListScreen(
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(padding)) {
+        val isDesktop = maxWidth > 900.dp
+        val contentModifier = if (isDesktop) {
+            Modifier.widthIn(max = 900.dp).align(Alignment.TopCenter).fillMaxHeight()
+        } else {
+            Modifier.fillMaxSize()
+        }
+        Column(modifier = contentModifier) {
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = { viewModel.search(it) },
@@ -65,6 +72,7 @@ fun SnippetListScreen(
                 }
             }
         }
+        } // BoxWithConstraints
     }
 }
 

@@ -63,6 +63,14 @@ class SnippetDetailMiddleware(
                     .onFailure { next(SnippetDetailIntent.DeleteFailed(it.message)) }
             }
 
+            is SnippetDetailIntent.ConvertToR -> {
+                val code = state.snippet?.code ?: return
+                next(SnippetDetailIntent.ConvertToRLoading)
+                repository.convertSasToR(code)
+                    .onSuccess { next(SnippetDetailIntent.ConvertToRSucceeded(it)) }
+                    .onFailure { next(SnippetDetailIntent.ConvertToRFailed(it.message)) }
+            }
+
             else -> next(intent)
         }
     }

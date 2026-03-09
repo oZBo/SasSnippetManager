@@ -1,6 +1,8 @@
 package com.sassnippet.manager.network
 
 import com.sassnippet.manager.model.CreateSnippetRequest
+import com.sassnippet.manager.model.SasToRRequest
+import com.sassnippet.manager.model.SasToRResponse
 import com.sassnippet.manager.model.Snippet
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -71,6 +73,14 @@ class SnippetApiClient(
         } catch (e: Exception) {
             false
         }
+    }
+
+    suspend fun convertSasToR(code: String): String {
+        val response: SasToRResponse = client.post("$baseUrl/api/ai/convert-to-r") {
+            contentType(ContentType.Application.Json)
+            setBody(SasToRRequest(code = code))
+        }.body()
+        return response.rCode
     }
 
 }

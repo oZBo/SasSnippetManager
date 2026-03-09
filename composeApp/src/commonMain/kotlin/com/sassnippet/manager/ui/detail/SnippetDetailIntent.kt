@@ -28,4 +28,10 @@ sealed class SnippetDetailIntent {
     data class EditValidationFailed(val message: String) : SnippetDetailIntent()
     data object DeleteSucceeded : SnippetDetailIntent()
     data class DeleteFailed(val message: String?) : SnippetDetailIntent()
+    // Convert to R
+    data object ConvertToR : SnippetDetailIntent()
+    data object ConvertToRLoading : SnippetDetailIntent()
+    data class ConvertToRSucceeded(val rCode: String) : SnippetDetailIntent()
+    data class ConvertToRFailed(val message: String?) : SnippetDetailIntent()
+    data object DismissConvertResult : SnippetDetailIntent()
 }

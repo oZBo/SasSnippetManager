@@ -22,6 +22,12 @@ data class CreateSnippetRequest(
 )
 
 @Serializable
+data class SasToRRequest(val code: String)
+
+@Serializable
+data class SasToRResponse(val rCode: String)
+
+@Serializable
 enum class SnippetType {
     MACRO,
     DATA_STEP,

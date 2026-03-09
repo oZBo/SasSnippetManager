@@ -18,5 +18,9 @@ data class SnippetDetailState(
     val editTagsInput: String = "",
     val editError: String? = null,
     // Delete confirmation
-    val showDeleteDialog: Boolean = false
+    val showDeleteDialog: Boolean = false,
+    // Convert to R
+    val isConverting: Boolean = false,
+    val convertedRCode: String? = null,
+    val convertError: String? = null
 )

@@ -58,9 +58,22 @@ object SnippetDetailReducer {
             is SnippetDetailIntent.DeleteFailed ->
                 state.copy(isLoading = false, error = intent.message ?: "Failed to delete", showDeleteDialog = false)
 
+            is SnippetDetailIntent.ConvertToRLoading ->
+                state.copy(isConverting = true, convertedRCode = null, convertError = null)
+
+            is SnippetDetailIntent.ConvertToRSucceeded ->
+                state.copy(isConverting = false, convertedRCode = intent.rCode)
+
+            is SnippetDetailIntent.ConvertToRFailed ->
+                state.copy(isConverting = false, convertError = intent.message ?: "Conversion failed")
+
+            is SnippetDetailIntent.DismissConvertResult ->
+                state.copy(convertedRCode = null, convertError = null, isConverting = false)
+
             // Trigger-only — handled exclusively by Middleware
             is SnippetDetailIntent.Load,
             is SnippetDetailIntent.SaveEdit,
+            is SnippetDetailIntent.ConvertToR,
             is SnippetDetailIntent.ConfirmDelete -> state
         }
 }

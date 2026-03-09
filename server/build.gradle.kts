@@ -17,6 +17,11 @@ application {
 dependencies {
     implementation(projects.shared)
 
+    // Ktor client (for calling Groq AI API)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.contentNegotiation)
+    implementation(libs.ktor.serializationKotlinxJson.client)
+
     // Ktor server
     implementation(libs.logback)
     implementation(libs.ktor.serverCore)

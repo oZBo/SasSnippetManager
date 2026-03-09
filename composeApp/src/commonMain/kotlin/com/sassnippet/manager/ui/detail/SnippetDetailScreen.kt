@@ -18,6 +18,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.sassnippet.manager.model.SnippetType
+import com.sassnippet.manager.ui.util.RFormatter
 import com.sassnippet.manager.ui.util.SasFormatter
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -34,6 +35,76 @@ fun SnippetDetailScreen(
 
     LaunchedEffect(state.isDeleted) {
         if (state.isDeleted) onBack()
+    }
+
+    val clipboardManager = LocalClipboardManager.current
+    var rCopied by remember { mutableStateOf(false) }
+    val formattedRCode = remember(state.convertedRCode) {
+        state.convertedRCode?.let { RFormatter.formatRCode(it) }
+    }
+
+    // Convert to R dialog (loading / result / error)
+    if (state.isConverting || state.convertedRCode != null || state.convertError != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dispatch(SnippetDetailIntent.DismissConvertResult) },
+            title = { Text("Convert to R") },
+            text = {
+                when {
+                    state.isConverting -> Box(
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator()
+                            Spacer(Modifier.height(8.dp))
+                            Text("Converting with AI...", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                    state.convertError != null -> Text(
+                        text = "Error: ${state.convertError}",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    state.convertedRCode != null -> {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("R Code", style = MaterialTheme.typography.labelLarge)
+                                TextButton(onClick = {
+                                    clipboardManager.setText(AnnotatedString(state.convertedRCode!!))
+                                    rCopied = true
+                                }) {
+                                    Text(if (rCopied) "Copied!" else "Copy")
+                                }
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = MaterialTheme.shapes.small
+                            ) {
+                                Text(
+                                    text = formattedRCode!!,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState())
+                                        .padding(12.dp),
+                                    fontFamily = FontFamily.Monospace,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    softWrap = false
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.dispatch(SnippetDetailIntent.DismissConvertResult) }) {
+                    Text("Close")
+                }
+            }
+        )
     }
 
     if (state.showDeleteDialog) {
@@ -99,32 +170,45 @@ fun SnippetDetailScreen(
             )
         }
     ) { padding ->
-        when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        BoxWithConstraints(modifier = Modifier.fillMaxSize().padding(padding)) {
+            val isDesktop = maxWidth > 900.dp
+            val contentModifier = if (isDesktop) {
+                Modifier.widthIn(max = 900.dp).align(Alignment.TopCenter).fillMaxHeight()
+            } else {
+                Modifier.fillMaxSize()
             }
-            state.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Error: ${state.error}")
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = { viewModel.dispatch(SnippetDetailIntent.Load) }) { Text("Retry") }
+            when {
+                state.isLoading -> Box(contentModifier, contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
+                state.error != null -> Box(contentModifier, contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Error: ${state.error}")
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = { viewModel.dispatch(SnippetDetailIntent.Load) }) { Text("Retry") }
+                    }
+                }
+                state.isEditing -> EditSnippetForm(
+                    state = state,
+                    onIntent = viewModel::dispatch,
+                    modifier = contentModifier
+                )
+                state.snippet != null -> SnippetDetailContent(
+                    state = state,
+                    onIntent = viewModel::dispatch,
+                    modifier = contentModifier
+                )
             }
-            state.isEditing -> EditSnippetForm(
-                state = state,
-                onIntent = viewModel::dispatch,
-                modifier = Modifier.padding(padding)
-            )
-            state.snippet != null -> SnippetDetailContent(
-                state = state,
-                modifier = Modifier.padding(padding)
-            )
         }
     }
 }
 
 @Composable
-private fun SnippetDetailContent(state: SnippetDetailState, modifier: Modifier = Modifier) {
+private fun SnippetDetailContent(
+    state: SnippetDetailState,
+    onIntent: (SnippetDetailIntent) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val snippet = state.snippet ?: return
     val formattedCode = remember(snippet.code) { SasFormatter.formatSasCode(snippet.code) }
     var copied by remember { mutableStateOf(false) }
@@ -152,11 +236,16 @@ private fun SnippetDetailContent(state: SnippetDetailState, modifier: Modifier =
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Code", style = MaterialTheme.typography.titleMedium)
-            Button(onClick = {
-                clipboardManager.setText(AnnotatedString(snippet.code))
-                copied = true
-            }) {
-                Text(if (copied) "Copied!" else "Copy")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { onIntent(SnippetDetailIntent.ConvertToR) }) {
+                    Text("Convert to R")
+                }
+                Button(onClick = {
+                    clipboardManager.setText(AnnotatedString(snippet.code))
+                    copied = true
+                }) {
+                    Text(if (copied) "Copied!" else "Copy")
+                }
             }
         }
         Spacer(Modifier.height(8.dp))

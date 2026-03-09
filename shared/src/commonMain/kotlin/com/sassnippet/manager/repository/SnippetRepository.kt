@@ -60,4 +60,8 @@ class SnippetRepository(private val apiClient: SnippetApiClient) {
         apiClient.delete(id)
     }
 
+    suspend fun convertSasToR(code: String): Result<String> = runCatching {
+        apiClient.convertSasToR(code)
+    }
+
 }

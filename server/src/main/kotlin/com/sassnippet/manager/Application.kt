@@ -4,6 +4,7 @@ import com.sassnippet.manager.database.DatabaseFactory
 import com.sassnippet.manager.models.ErrorResponse
 import com.sassnippet.manager.plugins.configureApiKeySecurity
 import com.sassnippet.manager.repository.SnippetRepository
+import com.sassnippet.manager.routes.aiRoutes
 import com.sassnippet.manager.routes.healthRoutes
 import com.sassnippet.manager.routes.snippetRoutes
 import io.ktor.http.*
@@ -57,5 +58,6 @@ fun Application.module() {
     routing {
         snippetRoutes(repository)
         healthRoutes()
+        aiRoutes()
     }
 }
