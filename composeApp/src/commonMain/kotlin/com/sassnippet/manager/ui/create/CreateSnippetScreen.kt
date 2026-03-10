@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.sassnippet.manager.model.SnippetType
@@ -32,89 +33,96 @@ fun CreateSnippetScreen(
             )
         }
     ) { padding ->
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
-                value = state.title,
-                onValueChange = { viewModel.dispatch(CreateSnippetIntent.TitleChanged(it)) },
-                label = { Text("Title") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium
-            )
-
-            var expanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 900.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 OutlinedTextField(
-                    value = state.type.name,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Type") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    value = state.title,
+                    onValueChange = { viewModel.dispatch(CreateSnippetIntent.TitleChanged(it)) },
+                    label = { Text("Title") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium
                 )
-                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    SnippetType.entries.forEach { type ->
-                        DropdownMenuItem(
-                            text = { Text(type.name) },
-                            onClick = {
-                                viewModel.dispatch(CreateSnippetIntent.TypeChanged(type))
-                                expanded = false
-                            }
-                        )
+
+                var expanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+                    OutlinedTextField(
+                        value = state.type.name,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                        modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+                    )
+                    ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        SnippetType.entries.forEach { type ->
+                            DropdownMenuItem(
+                                text = { Text(type.name) },
+                                onClick = {
+                                    viewModel.dispatch(CreateSnippetIntent.TypeChanged(type))
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
-            }
 
-            OutlinedTextField(
-                value = state.description,
-                onValueChange = { viewModel.dispatch(CreateSnippetIntent.DescriptionChanged(it)) },
-                label = { Text("Description") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2, maxLines = 4,
-                shape = MaterialTheme.shapes.medium
-            )
+                OutlinedTextField(
+                    value = state.description,
+                    onValueChange = { viewModel.dispatch(CreateSnippetIntent.DescriptionChanged(it)) },
+                    label = { Text("Description") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 2, maxLines = 4,
+                    shape = MaterialTheme.shapes.medium
+                )
 
-            OutlinedTextField(
-                value = state.code,
-                onValueChange = { viewModel.dispatch(CreateSnippetIntent.CodeChanged(it)) },
-                label = { Text("Code") },
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 5, maxLines = 15,
-                shape = MaterialTheme.shapes.medium
-            )
+                OutlinedTextField(
+                    value = state.code,
+                    onValueChange = { viewModel.dispatch(CreateSnippetIntent.CodeChanged(it)) },
+                    label = { Text("Code") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 5, maxLines = 15,
+                    shape = MaterialTheme.shapes.medium
+                )
 
-            OutlinedTextField(
-                value = state.tagsInput,
-                onValueChange = { viewModel.dispatch(CreateSnippetIntent.TagsChanged(it)) },
-                label = { Text("Tags (comma separated)") },
-                placeholder = { Text("sql, join, basic") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium
-            )
+                OutlinedTextField(
+                    value = state.tagsInput,
+                    onValueChange = { viewModel.dispatch(CreateSnippetIntent.TagsChanged(it)) },
+                    label = { Text("Tags (comma separated)") },
+                    placeholder = { Text("sql, join, basic") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = MaterialTheme.shapes.medium
+                )
 
-            state.error?.let {
-                Text(text = it, color = MaterialTheme.colorScheme.error)
-            }
+                state.error?.let {
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
 
-            Button(
-                onClick = { viewModel.dispatch(CreateSnippetIntent.Submit) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !state.isLoading
-            ) {
-                if (state.isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                } else {
-                    Text("Save Snippet")
+                Button(
+                    onClick = { viewModel.dispatch(CreateSnippetIntent.Submit) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !state.isLoading
+                ) {
+                    if (state.isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                    } else {
+                        Text("Save Snippet")
+                    }
                 }
             }
         }
