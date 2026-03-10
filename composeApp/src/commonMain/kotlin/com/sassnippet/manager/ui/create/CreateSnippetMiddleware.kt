@@ -15,28 +15,32 @@ class CreateSnippetMiddleware(
         next: suspend (CreateSnippetIntent) -> Unit
     ) {
         when (intent) {
-            is CreateSnippetIntent.Submit -> {
-                if (state.title.isBlank() || state.description.isBlank() || state.code.isBlank()) {
-                    next(CreateSnippetIntent.ValidationFailed("Title, description and code are required"))
-                    return
-                }
-                next(CreateSnippetIntent.StartLoading)
-                val tags = state.tagsInput.split(",").map { it.trim() }.filter { it.isNotBlank() }
-                repository.create(
-                    title = state.title,
-                    type = state.type,
-                    description = state.description,
-                    code = state.code,
-                    tags = tags
-                )
-                    .onSuccess { snippet ->
-                        SnippetEventBus.emit(SnippetEvent.SnippetUpdateList)
-                        next(CreateSnippetIntent.CreateSucceeded(snippet))
-                    }
-                    .onFailure { next(CreateSnippetIntent.CreateFailed(it.message)) }
-            }
-
+            is CreateSnippetIntent.Submit -> handleSubmit(state, next)
             else -> next(intent)
         }
+    }
+
+    private suspend fun handleSubmit(
+        state: CreateSnippetState,
+        next: suspend (CreateSnippetIntent) -> Unit
+    ) {
+        if (state.title.isBlank() || state.description.isBlank() || state.code.isBlank()) {
+            next(CreateSnippetIntent.ValidationFailed("Title, description and code are required"))
+            return
+        }
+        next(CreateSnippetIntent.StartLoading)
+        val tags = state.tagsInput.split(",").map { it.trim() }.filter { it.isNotBlank() }
+        repository.create(
+            title = state.title,
+            type = state.type,
+            description = state.description,
+            code = state.code,
+            tags = tags
+        )
+            .onSuccess { snippet ->
+                SnippetEventBus.emit(SnippetEvent.SnippetUpdateList)
+                next(CreateSnippetIntent.CreateSucceeded(snippet))
+            }
+            .onFailure { next(CreateSnippetIntent.CreateFailed(it.message)) }
     }
 }

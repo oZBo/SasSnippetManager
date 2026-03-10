@@ -6,6 +6,7 @@ import com.sassnippet.manager.di.initKoin
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
+    initKoin {}
     ComposeViewport {
         App()
     }

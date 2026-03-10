@@ -21,7 +21,7 @@ material3 = "1.10.0-alpha05"
 exposed = "0.61.0"
 postgresql = "42.7.10"
 hikaricp = "7.0.2"
-koin = "4.0.0"
+koin = "4.1.0"
 h2 = "2.2.224"
 mockk = "1.13.10"
 

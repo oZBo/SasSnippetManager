@@ -1,5 +1,3 @@
-// composeApp/src/commonMain/kotlin/com/sassnippet/manager/ui/detail/SnippetDetailScreen.kt
-
 package com.sassnippet.manager.ui.detail
 
 import androidx.compose.foundation.horizontalScroll
@@ -60,10 +58,12 @@ fun SnippetDetailScreen(
                             Text("Converting with AI...", style = MaterialTheme.typography.bodySmall)
                         }
                     }
+
                     state.convertError != null -> Text(
                         text = "Error: ${state.convertError}",
                         color = MaterialTheme.colorScheme.error
                     )
+
                     state.convertedRCode != null -> {
                         Column {
                             Row(
@@ -180,11 +180,7 @@ fun SnippetDetailScreen(
                                 Icon(Icons.Default.Edit, contentDescription = "Edit snippet")
                             }
                             IconButton(onClick = { viewModel.dispatch(SnippetDetailIntent.RequestDelete) }) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Delete snippet",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
+                                Icon(Icons.Default.Delete, contentDescription = "Delete snippet")
                             }
                         }
                     }
@@ -203,6 +199,7 @@ fun SnippetDetailScreen(
                 state.isLoading -> Box(contentModifier, contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
+
                 state.error != null -> Box(contentModifier, contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Error: ${state.error}")
@@ -210,11 +207,13 @@ fun SnippetDetailScreen(
                         Button(onClick = { viewModel.dispatch(SnippetDetailIntent.Load) }) { Text("Retry") }
                     }
                 }
+
                 state.isEditing -> EditSnippetForm(
                     state = state,
                     onIntent = viewModel::dispatch,
                     modifier = contentModifier
                 )
+
                 state.snippet != null -> SnippetDetailContent(
                     state = state,
                     onIntent = viewModel::dispatch,
@@ -293,7 +292,7 @@ private fun SnippetDetailContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("R Code", style = MaterialTheme.typography.titleMedium)
-                TextButton(onClick = {
+                Button(onClick = {
                     clipboardManager.setText(AnnotatedString(snippet.rCode!!))
                     rCopied = true
                 }) {
