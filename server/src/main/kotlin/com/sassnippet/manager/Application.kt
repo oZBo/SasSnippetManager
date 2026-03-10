@@ -36,8 +36,10 @@ fun Application.module() {
 
     install(CORS) {
         anyMethod()
-        anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
-        allowHeaders { true }
+        anyHost()
+        allowNonSimpleContentTypes = true
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader("X-API-Key")
     }
 
     install(StatusPages) {
