@@ -9,7 +9,8 @@ data class Snippet(
     val type: SnippetType,
     val description: String,
     val code: String,
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val rCode: String? = null
 )
 
 @Serializable
@@ -23,6 +24,9 @@ data class CreateSnippetRequest(
 
 @Serializable
 data class SasToRRequest(val code: String)
+
+@Serializable
+data class SaveRCodeRequest(val rCode: String)
 
 @Serializable
 data class SasToRResponse(val rCode: String)

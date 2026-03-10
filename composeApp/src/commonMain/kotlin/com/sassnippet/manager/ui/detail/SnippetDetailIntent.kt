@@ -34,4 +34,9 @@ sealed class SnippetDetailIntent {
     data class ConvertToRSucceeded(val rCode: String) : SnippetDetailIntent()
     data class ConvertToRFailed(val message: String?) : SnippetDetailIntent()
     data object DismissConvertResult : SnippetDetailIntent()
+    // Save R code to DB
+    data object SaveRCode : SnippetDetailIntent()
+    data object SaveRCodeStarted : SnippetDetailIntent()
+    data class SaveRCodeSucceeded(val snippet: Snippet) : SnippetDetailIntent()
+    data class SaveRCodeFailed(val message: String?) : SnippetDetailIntent()
 }

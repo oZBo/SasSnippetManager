@@ -51,7 +51,7 @@ object DatabaseFactory {
         Database.connect(HikariDataSource(config))
 
         transaction {
-            SchemaUtils.create(SnippetTable)
+            SchemaUtils.createMissingTablesAndColumns(SnippetTable)
         }
 
         logger.info("Database initialized successfully")

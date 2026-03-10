@@ -91,13 +91,22 @@ class SnippetRepository {
             .also { logger.info("delete($id)") }
     }
 
+    fun saveRCode(id: Int, rCode: String): Snippet? = transaction {
+        logger.info("saveRCode($id)")
+        val updated = SnippetTable.update({ SnippetTable.id eq id }) {
+            it[SnippetTable.rCode] = rCode
+        }
+        if (updated > 0) getById(id) else null
+    }
+
     private fun ResultRow.toSnippet() = Snippet(
         id = this[SnippetTable.id].value,
         title = this[SnippetTable.title],
         type = SnippetType.valueOf(this[SnippetTable.type]),
         description = this[SnippetTable.description],
         code = this[SnippetTable.code],
-        tags = Json.decodeFromString(this[SnippetTable.tags])
+        tags = Json.decodeFromString(this[SnippetTable.tags]),
+        rCode = this[SnippetTable.rCode]
     )
 
 }

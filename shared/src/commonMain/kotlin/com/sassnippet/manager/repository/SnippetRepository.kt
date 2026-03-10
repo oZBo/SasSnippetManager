@@ -64,4 +64,8 @@ class SnippetRepository(private val apiClient: SnippetApiClient) {
         apiClient.convertSasToR(code)
     }
 
+    suspend fun saveRCode(id: Int, rCode: String): Result<Snippet?> = runCatching {
+        apiClient.saveRCode(id, rCode)
+    }
+
 }

@@ -63,13 +63,15 @@ fun Route.aiRoutes() {
                         messages = listOf(
                             GroqMessage(
                                 role = "system",
-                                content = "You are a SAS to R code converter. Convert SAS code to equivalent R code. " +
-                                        "Return only the R code without any explanation, comments, or markdown formatting. " +
+                                content = "You are a SAS to R code converter. Convert SAS code to a complete, runnable R program. " +
+                                        "Always include all necessary library() imports at the top. " +
+                                        "Add short inline comments (# ...) explaining what each major block of code does. " +
+                                        "Return only the R code — no markdown fences, no explanations outside the code. " +
                                         "Do not include ```r or ``` code fences."
                             ),
                             GroqMessage(
                                 role = "user",
-                                content = "Convert this SAS code to R:\n\n${request.code}"
+                                content = "Convert this SAS code to a full R program with imports and comments:\n\n${request.code}"
                             )
                         )
                     )

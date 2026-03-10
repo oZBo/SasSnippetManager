@@ -95,11 +95,33 @@ fun SnippetDetailScreen(
                                     softWrap = false
                                 )
                             }
+                            state.rCodeSaveError?.let {
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    text = it,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
                     }
                 }
             },
             confirmButton = {
+                if (state.convertedRCode != null) {
+                    TextButton(
+                        onClick = { viewModel.dispatch(SnippetDetailIntent.SaveRCode) },
+                        enabled = !state.isSavingRCode
+                    ) {
+                        if (state.isSavingRCode) {
+                            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        } else {
+                            Text("Save")
+                        }
+                    }
+                }
+            },
+            dismissButton = {
                 TextButton(onClick = { viewModel.dispatch(SnippetDetailIntent.DismissConvertResult) }) {
                     Text("Close")
                 }
@@ -211,7 +233,11 @@ private fun SnippetDetailContent(
 ) {
     val snippet = state.snippet ?: return
     val formattedCode = remember(snippet.code) { SasFormatter.formatSasCode(snippet.code) }
+    val formattedSavedRCode = remember(snippet.rCode) {
+        snippet.rCode?.let { RFormatter.formatRCode(it) }
+    }
     var copied by remember { mutableStateOf(false) }
+    var rCopied by remember { mutableStateOf(false) }
     val clipboardManager = LocalClipboardManager.current
 
     Column(
@@ -235,7 +261,7 @@ private fun SnippetDetailContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Code", style = MaterialTheme.typography.titleMedium)
+            Text("SAS Code", style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = { onIntent(SnippetDetailIntent.ConvertToR) }) {
                     Text("Convert to R")
@@ -257,6 +283,33 @@ private fun SnippetDetailContent(
                 style = MaterialTheme.typography.bodySmall,
                 softWrap = false
             )
+        }
+
+        if (snippet.rCode != null && formattedSavedRCode != null) {
+            Spacer(Modifier.height(24.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("R Code", style = MaterialTheme.typography.titleMedium)
+                TextButton(onClick = {
+                    clipboardManager.setText(AnnotatedString(snippet.rCode!!))
+                    rCopied = true
+                }) {
+                    Text(if (rCopied) "Copied!" else "Copy")
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Surface(color = MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.medium) {
+                Text(
+                    text = formattedSavedRCode,
+                    modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(16.dp),
+                    fontFamily = FontFamily.Monospace,
+                    style = MaterialTheme.typography.bodySmall,
+                    softWrap = false
+                )
+            }
         }
     }
 }

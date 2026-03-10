@@ -68,12 +68,24 @@ object SnippetDetailReducer {
                 state.copy(isConverting = false, convertError = intent.message ?: "Conversion failed")
 
             is SnippetDetailIntent.DismissConvertResult ->
-                state.copy(convertedRCode = null, convertError = null, isConverting = false)
+                state.copy(convertedRCode = null, convertError = null, isConverting = false,
+                    isSavingRCode = false, rCodeSaveError = null)
+
+            is SnippetDetailIntent.SaveRCodeStarted ->
+                state.copy(isSavingRCode = true, rCodeSaveError = null)
+
+            is SnippetDetailIntent.SaveRCodeSucceeded ->
+                state.copy(isSavingRCode = false, snippet = intent.snippet,
+                    convertedRCode = null, convertError = null)
+
+            is SnippetDetailIntent.SaveRCodeFailed ->
+                state.copy(isSavingRCode = false, rCodeSaveError = intent.message ?: "Failed to save R code")
 
             // Trigger-only — handled exclusively by Middleware
             is SnippetDetailIntent.Load,
             is SnippetDetailIntent.SaveEdit,
             is SnippetDetailIntent.ConvertToR,
+            is SnippetDetailIntent.SaveRCode,
             is SnippetDetailIntent.ConfirmDelete -> state
         }
 }

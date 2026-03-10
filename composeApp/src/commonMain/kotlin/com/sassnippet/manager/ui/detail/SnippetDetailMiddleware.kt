@@ -71,6 +71,21 @@ class SnippetDetailMiddleware(
                     .onFailure { next(SnippetDetailIntent.ConvertToRFailed(it.message)) }
             }
 
+            is SnippetDetailIntent.SaveRCode -> {
+                val rCode = state.convertedRCode ?: return
+                next(SnippetDetailIntent.SaveRCodeStarted)
+                repository.saveRCode(snippetId, rCode)
+                    .onSuccess { snippet ->
+                        if (snippet != null) {
+                            SnippetEventBus.emit(SnippetEvent.SnippetUpdateList)
+                            next(SnippetDetailIntent.SaveRCodeSucceeded(snippet))
+                        } else {
+                            next(SnippetDetailIntent.SaveRCodeFailed("Server returned empty response"))
+                        }
+                    }
+                    .onFailure { next(SnippetDetailIntent.SaveRCodeFailed(it.message)) }
+            }
+
             else -> next(intent)
         }
     }

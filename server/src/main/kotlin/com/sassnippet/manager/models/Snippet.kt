@@ -9,7 +9,8 @@ data class Snippet(
     val type: SnippetType,
     val description: String,
     val code: String,
-    val tags: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val rCode: String? = null
 )
 
 @Serializable
@@ -26,6 +27,9 @@ data class CreateSnippetRequest(
         require(title.length <= 255) { "title too long" }
     }
 }
+
+@Serializable
+data class SaveRCodeRequest(val rCode: String)
 
 @Serializable
 data class PagedSnippetResponse<T>(

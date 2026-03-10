@@ -22,5 +22,8 @@ data class SnippetDetailState(
     // Convert to R
     val isConverting: Boolean = false,
     val convertedRCode: String? = null,
-    val convertError: String? = null
+    val convertError: String? = null,
+    // Save R code
+    val isSavingRCode: Boolean = false,
+    val rCodeSaveError: String? = null
 )

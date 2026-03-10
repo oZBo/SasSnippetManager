@@ -1,6 +1,7 @@
 package com.sassnippet.manager.network
 
 import com.sassnippet.manager.model.CreateSnippetRequest
+import com.sassnippet.manager.model.SaveRCodeRequest
 import com.sassnippet.manager.model.SasToRRequest
 import com.sassnippet.manager.model.SasToRResponse
 import com.sassnippet.manager.model.Snippet
@@ -12,6 +13,7 @@ import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -81,6 +83,17 @@ class SnippetApiClient(
             setBody(SasToRRequest(code = code))
         }.body()
         return response.rCode
+    }
+
+    suspend fun saveRCode(id: Int, rCode: String): Snippet? {
+        return try {
+            client.patch("$baseUrl/api/snippets/$id/r-code") {
+                contentType(ContentType.Application.Json)
+                setBody(SaveRCodeRequest(rCode = rCode))
+            }.body()
+        } catch (e: Exception) {
+            null
+        }
     }
 
 }

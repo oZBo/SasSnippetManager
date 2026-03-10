@@ -1,7 +1,6 @@
 package com.sassnippet.manager.database
 
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.Table
 
 object SnippetTable : IntIdTable("snippets") {
     val title = varchar("title", 255)
@@ -9,4 +8,5 @@ object SnippetTable : IntIdTable("snippets") {
     val description = text("description")
     val code = text("code")
     val tags = text("tags") //JSON
+    val rCode = text("r_code").nullable()
 }
